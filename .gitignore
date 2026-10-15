@@ -1,0 +1,17 @@
+# 库文件
+Drivers/
+
+# 编译输出
+Build/
+Debug/
+Release/
+
+# CubeMX生成临时文件
+*.log
+*.bak
+# 操作系统文件
+.DS_Store
+Thumbs.db
+# IDE配置
+.idea/
+.vscode/
