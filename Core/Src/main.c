@@ -23,7 +23,7 @@
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
-
+#include "ssd1306.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -89,7 +89,20 @@ int main(void)
   MX_GPIO_Init();
   MX_I2C1_Init();
   /* USER CODE BEGIN 2 */
-
+  // 1. 初始化 OLED
+  ssd1306_Init();
+  
+  // 2. 清屏（清空显存）
+  ssd1306_Fill(Black);
+  
+  // 3. 在 (0, 0) 坐标显示大号英文字符（验证屏幕）
+  ssd1306_SetCursor(0, 0);
+  ssd1306_WriteString("Hello STM32", Font_11x18, White);
+  
+  // 4. 刷新到屏幕（必须调用！）
+  ssd1306_UpdateScreen();
+  
+  HAL_Delay(2000); // 停 2 秒看看效果
   /* USER CODE END 2 */
 
   /* Infinite loop */
@@ -97,7 +110,26 @@ int main(void)
   while (1)
   {
     /* USER CODE END WHILE */
+  /* Infinite loop */
+  /* USER CODE BEGIN WHILE */
+  while (1)
+  {
+    /* USER CODE END WHILE */
 
+    // 动态显示测试
+    ssd1306_Fill(Black); // 清空显存
+    
+    ssd1306_SetCursor(0, 0);
+    ssd1306_WriteString("Running...", Font_6x8, White);
+    
+    ssd1306_SetCursor(0, 16);
+    // 为了显示"你好"，我们可以先用英文字符串占位
+    ssd1306_WriteString("Hello World", Font_11x18, White);
+    
+    ssd1306_UpdateScreen(); // 刷新到屏幕
+    HAL_Delay(500); // 延时 500ms
+    
+  }
     /* USER CODE BEGIN 3 */
   }
   /* USER CODE END 3 */
