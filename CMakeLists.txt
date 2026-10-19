@@ -47,12 +47,15 @@ target_sources(${CMAKE_PROJECT_NAME} PRIVATE
     # Add user sources here
     Drivers/OLED/ssd1306_fonts.c
     Drivers/OLED/ssd1306.c
+    Drivers/SPIF/spif.c
 )
 
 # Add include paths
 target_include_directories(${CMAKE_PROJECT_NAME} PRIVATE
     # Add user defined include paths
     Drivers/OLED
+    Drivers/OSAL
+    Drivers/SPIF
 )
 
 # Add project symbols (macros)
