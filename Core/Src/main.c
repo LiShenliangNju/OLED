@@ -21,6 +21,7 @@
 #include "dma.h"
 #include "i2c.h"
 #include "spi.h"
+#include "tim.h"
 #include "usart.h"
 #include "gpio.h"
 
@@ -64,6 +65,12 @@ static spif_t w25q64;
 static uint8_t frame_buffer[SSD1306_BUFFER_SIZE];
 static uint8_t flash_buffer[SPIF_PAGE_SIZE];
 static char jedec_id_line[] = "JEDEC: 00 00 00";
+static uint32_t current_frame;
+static bool video_available;
+static uint32_t frame_period_remainder;
+static uint32_t frame_start;
+static uint32_t frame_duration;
+static const uint8_t upload_command[] = {'I', 'K', 'U', 'P'};
 static const uint8_t intro_glyphs[2][6][32] = {
   {
     {0x20U, 0x02U, 0x70U, 0x0AU, 0x1EU, 0x12U, 0x10U, 0x12U, 0x10U, 0x02U, 0xFFU, 0x7FU, 0x10U, 0x02U, 0x10U, 0x22U, 0x50U, 0x22U, 0x30U, 0x12U, 0x18U, 0x0CU, 0x16U, 0x44U, 0x10U, 0x4AU, 0x10U, 0x51U, 0xD4U, 0x60U, 0x08U, 0x40U}, /* 我 */
@@ -440,7 +447,7 @@ int main(void)
   /* MCU Configuration--------------------------------------------------------*/
 
   /* Reset of all peripherals, Initializes the Flash interface and the Systick. */
-   HAL_Init();
+  HAL_Init();
 
   /* USER CODE BEGIN Init */
 
@@ -459,7 +466,15 @@ int main(void)
   MX_I2C1_Init();
   MX_SPI1_Init();
   MX_USART1_UART_Init();
+  MX_TIM1_Init();
   /* USER CODE BEGIN 2 */
+  if (HAL_TIM_PWM_Start(&htim1, TIM_CHANNEL_4) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  HAL_Delay(1000U);
+  __HAL_TIM_SET_COMPARE(&htim1, TIM_CHANNEL_4, 0U);
+
   ssd1306_Init();
   if (!W25Q_Init())
   {
@@ -468,16 +483,8 @@ int main(void)
       HAL_Delay(1000U);
     }
   }
-  /* USER CODE END 2 */
-
-  /* Infinite loop */
-  uint32_t current_frame = 0U;
-  bool video_available = Video_ReadHeader();
-  static const uint8_t upload_command[] = {'I', 'K', 'U', 'P'};
-  static uint32_t frame_period_remainder = 0U;
-  uint32_t frame_start;
-  uint32_t frame_duration;
-
+  current_frame = 0U;
+  video_available = Video_ReadHeader();
   if (video_available)
   {
     Video_ShowIntro();
@@ -486,7 +493,9 @@ int main(void)
   {
     Flash_Log("No video in W25Q", "Send IKUP via UART", "115200 8N1");
   }
+  /* USER CODE END 2 */
 
+  /* Infinite loop */
   /* USER CODE BEGIN WHILE */
   while (1)
   {
